@@ -201,9 +201,9 @@ pub fn bench_sum_array_changing_stride<const N: usize>(array: &[u8; N]) -> u8 {
         unsafe {
             asm!(
                 "xor {sum}, {sum}",
-                "add {stride}, 3",
-                "and {stride}, 15",
-                "add {i}, 8",
+                "add {stride}, 9",
+                "and {stride}, 31",
+                "add {i}, 110",
                 "add {i}, {stride}",
                 sum = inout(reg) sum,
                 i = inout(reg) i,
@@ -231,7 +231,8 @@ pub fn main() -> std::io::Result<()> {
                     black_box(bench_alu_ops(&small_array));
                 }
             },
-            0,
+            small_array.len() * ITER_COUNT,
+            None,
         )?;
     }
 
@@ -243,11 +244,12 @@ pub fn main() -> std::io::Result<()> {
                     black_box(bench_alu_ops_unrolled(&small_array));
                 }
             },
-            0,
+            small_array.len() * ITER_COUNT,
+            None,
         )?;
     }
 
-    if true {
+    if false {
         run_benchmarks(
             "bench_alu_ops_super_unrolled",
             || {
@@ -255,7 +257,8 @@ pub fn main() -> std::io::Result<()> {
                     black_box(bench_alu_ops_super_unrolled(&small_array));
                 }
             },
-            0,
+            small_array.len() * ITER_COUNT,
+            None,
         )?;
     }
 
@@ -267,7 +270,8 @@ pub fn main() -> std::io::Result<()> {
                     black_box(bench_mul_ops(&small_array));
                 }
             },
-            0,
+            small_array.len() * ITER_COUNT,
+            None,
         )?;
     }
 
@@ -279,7 +283,8 @@ pub fn main() -> std::io::Result<()> {
                     black_box(bench_sum_of_array(&small_array));
                 }
             },
-            0,
+            small_array.len() * ITER_COUNT,
+            Some(small_array.len() * ITER_COUNT),
         )?;
     }
 
@@ -291,34 +296,37 @@ pub fn main() -> std::io::Result<()> {
                     black_box(bench_sum_of_array_unrolled(&small_array));
                 }
             },
-            0,
+            small_array.len() * ITER_COUNT / 2,
+            Some(small_array.len() * ITER_COUNT),
         )?;
     }
 
     const SMALL_ITER_COUNT: usize = 1_000;
     let array_1_mb = black_box([0; 1_000_000]);
 
-    if true {
+    if false {
         run_benchmarks(
             "bench_sum_array_1MB",
             || {
-                for _ in 0..SMALL_ITER_COUNT / 10 {
+                for _ in 0..SMALL_ITER_COUNT {
                     black_box(bench_sum_of_array_with_stride(&array_1_mb, 1));
                 }
             },
-            0,
+            array_1_mb.len() * SMALL_ITER_COUNT,
+            Some(array_1_mb.len() * ITER_COUNT),
         )?;
     }
 
-    if true {
+    if false {
         run_benchmarks(
             "bench_sum_array_1MB_stride_64",
             || {
-                for _ in 0..SMALL_ITER_COUNT / 10 {
+                for _ in 0..SMALL_ITER_COUNT {
                     black_box(bench_sum_of_array_with_stride(&array_1_mb, 64));
                 }
             },
-            0,
+            array_1_mb.len() * SMALL_ITER_COUNT / 64,
+            Some(array_1_mb.len() * ITER_COUNT / 64),
         )?;
     }
 
@@ -326,11 +334,12 @@ pub fn main() -> std::io::Result<()> {
         run_benchmarks(
             "bench_sum_array_1MB_stride_16",
             || {
-                for _ in 0..SMALL_ITER_COUNT / 10 {
+                for _ in 0..SMALL_ITER_COUNT {
                     black_box(bench_sum_of_array_with_stride(&array_1_mb, 16));
                 }
             },
-            0,
+            array_1_mb.len() * SMALL_ITER_COUNT / 16,
+            Some(array_1_mb.len() * SMALL_ITER_COUNT / 16),
         )?;
     }
 
@@ -338,14 +347,15 @@ pub fn main() -> std::io::Result<()> {
         run_benchmarks(
             "bench_sum_array_1MB_stride_16_prefetch_4",
             || {
-                for _ in 0..SMALL_ITER_COUNT / 10 {
+                for _ in 0..SMALL_ITER_COUNT {
                     black_box(bench_sum_of_array_with_stride_prefetch::<1_000_000, 4>(
                         &array_1_mb,
                         16,
                     ));
                 }
             },
-            0,
+            array_1_mb.len() * SMALL_ITER_COUNT / 16,
+            Some(array_1_mb.len() * SMALL_ITER_COUNT / 16),
         )?;
     }
 
@@ -353,29 +363,15 @@ pub fn main() -> std::io::Result<()> {
         run_benchmarks(
             "bench_sum_array_1MB_stride_16_prefetch_1",
             || {
-                for _ in 0..SMALL_ITER_COUNT / 10 {
+                for _ in 0..SMALL_ITER_COUNT {
                     black_box(bench_sum_of_array_with_stride_prefetch::<1_000_000, 1>(
                         &array_1_mb,
                         16,
                     ));
                 }
             },
-            0,
-        )?;
-    }
-
-    if true {
-        run_benchmarks(
-            "bench_sum_array_1MB_stride_16_prefetch_1",
-            || {
-                for _ in 0..SMALL_ITER_COUNT / 10 {
-                    black_box(bench_sum_of_array_with_stride_prefetch::<1_000_000, 1>(
-                        &array_1_mb,
-                        16,
-                    ));
-                }
-            },
-            0,
+            array_1_mb.len() * SMALL_ITER_COUNT / 16,
+            Some(array_1_mb.len() * SMALL_ITER_COUNT / 16),
         )?;
     }
 
@@ -383,23 +379,25 @@ pub fn main() -> std::io::Result<()> {
         run_benchmarks(
             "bench_sum_array_stride_16_and_pad",
             || {
-                for _ in 0..SMALL_ITER_COUNT / 10 {
+                for _ in 0..SMALL_ITER_COUNT {
                     black_box(bench_sum_array_stride_and_pad(&array_1_mb, 16));
                 }
             },
-            0,
+            array_1_mb.len() * SMALL_ITER_COUNT / 16,
+            Some(array_1_mb.len() * SMALL_ITER_COUNT / 16),
         )?;
     }
 
     if true {
         run_benchmarks(
-            "bench_sum_array_stride_64_and_pad",
+            "bench_sum_array_stride_128_and_pad",
             || {
-                for _ in 0..SMALL_ITER_COUNT / 10 {
-                    black_box(bench_sum_array_stride_and_pad(&array_1_mb, 16));
+                for _ in 0..SMALL_ITER_COUNT {
+                    black_box(bench_sum_array_stride_and_pad(&array_1_mb, 128));
                 }
             },
-            0,
+            array_1_mb.len() * SMALL_ITER_COUNT / 128,
+            Some(array_1_mb.len() * SMALL_ITER_COUNT / 128),
         )?;
     }
 
@@ -407,11 +405,12 @@ pub fn main() -> std::io::Result<()> {
         run_benchmarks(
             "bench_sum_array_changing_stride",
             || {
-                for _ in 0..SMALL_ITER_COUNT / 10 {
+                for _ in 0..SMALL_ITER_COUNT {
                     black_box(bench_sum_array_changing_stride(&array_1_mb));
                 }
             },
-            0,
+            array_1_mb.len() * SMALL_ITER_COUNT / 128,
+            Some(array_1_mb.len() * SMALL_ITER_COUNT / 128),
         )?;
     }
 

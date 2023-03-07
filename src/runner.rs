@@ -62,7 +62,12 @@ pub enum CacheResult {
 }
 */
 
-pub fn run_benchmarks(name: &str, callback: impl Fn(), iterations: usize) -> std::io::Result<()> {
+pub fn run_benchmarks(
+    name: &str,
+    callback: impl Fn(),
+    iterations: usize,
+    data_loads: Option<usize>,
+) -> std::io::Result<()> {
     let skip_all_this = false;
     if skip_all_this {
         callback();
@@ -281,6 +286,19 @@ pub fn run_benchmarks(name: &str, callback: impl Fn(), iterations: usize) -> std
             * 100.0,
         info_unit = "% of L2 accesses",
     );
+    println!("");
+
+    println!(
+        "Cycles per iteration: {count:.3}",
+        count = counts[&cycles] as f64 / iterations as f64
+    );
+    if let Some(data_loads) = data_loads {
+        println!(
+            "Cycles per data load: {count:.3}",
+            count = counts[&cycles] as f64 / data_loads as f64
+        );
+    }
+    println!("");
 
     Ok(())
 }
