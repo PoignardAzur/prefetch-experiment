@@ -1,0 +1,9 @@
+[build]
+rustflags = [
+    "-C", "no-vectorize-loops",
+    "-C", "link-arg=-fuse-ld=lld",
+]
+
+[profile.release]
+opt-level = 2
+debug = true
