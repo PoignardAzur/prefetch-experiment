@@ -6,6 +6,7 @@ use std::arch::asm;
 use std::arch::x86_64::{_mm_prefetch, _MM_HINT_T0};
 use std::hint::black_box;
 
+use rand::Rng;
 use runner::run_benchmarks;
 
 #[inline(never)]
@@ -215,6 +216,25 @@ pub fn bench_sum_array_changing_stride<const N: usize>(array: &[u8; N]) -> u8 {
     sum as u8
 }
 
+#[inline(never)]
+pub fn bench_sum_array_indirect<const N: usize, const M: usize>(
+    array: &[u8; N],
+    indices: &[usize; M],
+) -> u8 {
+    let x = black_box(3);
+    let mut sum: u64 = 0;
+    let mut stride: u64 = 0;
+
+    let mut i = 0;
+    while i < M {
+        // TODO - check that indices are in bounds
+        sum += array[indices[i]] as u64;
+        i += 64;
+    }
+
+    sum as u8
+}
+
 // ----------------
 
 pub fn main() -> std::io::Result<()> {
@@ -411,6 +431,26 @@ pub fn main() -> std::io::Result<()> {
             },
             array_1_mb.len() * SMALL_ITER_COUNT / 128,
             Some(array_1_mb.len() * SMALL_ITER_COUNT / 128),
+        )?;
+    }
+
+    // generate random indices
+    let array_indices: [usize; 100_000] = (0..100_000)
+        .map(|_| rand::thread_rng().gen_range(0..array_1_mb.len()))
+        .collect::<Vec<_>>()
+        .try_into()
+        .unwrap();
+
+    if true {
+        run_benchmarks(
+            "bench_sum_array_indirect",
+            || {
+                for _ in 0..SMALL_ITER_COUNT {
+                    black_box(bench_sum_array_indirect(&array_1_mb, &array_indices));
+                }
+            },
+            array_indices.len() * SMALL_ITER_COUNT / 64,
+            Some(array_indices.len() * SMALL_ITER_COUNT / 64),
         )?;
     }
 

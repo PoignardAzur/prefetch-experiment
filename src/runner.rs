@@ -74,6 +74,9 @@ pub fn run_benchmarks(
         return Ok(());
     }
 
+    println!("====================================================================");
+    println!("Benchmarking {}... ", name);
+
     // A `Group` lets us enable and disable several counters atomically.
     let mut group = Group::new()?;
 
@@ -179,9 +182,6 @@ pub fn run_benchmarks(
     let task_clock_nsec = counts[&task_clock] as f64;
     let task_clock_msec = counts[&task_clock] as f64 / 1_000_000.0;
     let task_clock_s = counts[&task_clock] as f64 / 1_000_000.0;
-
-    println!("====================================================================");
-    println!("Benchmarking {}... ", name);
 
     println!(
         "{count:>16.2} {unit:<4} {name:<30} # {info:.3} {info_unit}",
