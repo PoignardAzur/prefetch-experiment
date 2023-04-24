@@ -11,4 +11,4 @@ rand = "0.8.5"
 thousands = "0.2.0"
 
 [patch.crates-io]
-perf-event = { path = "../perf-event/perf-event" }
+perf-event = { path = "./perf-event-patch/perf-event" }
