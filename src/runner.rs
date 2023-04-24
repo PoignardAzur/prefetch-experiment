@@ -467,37 +467,4 @@ perf_event_open({
     precise_ip=0 /* arbitrary skid */,
 ...}, 0, -1, 3, 0) = -1 ENOENT (No such file or directory)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 */
