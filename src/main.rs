@@ -9,6 +9,73 @@ use std::hint::black_box;
 use rand::Rng;
 use runner::run_benchmarks;
 
+macro_rules! asm_comment {
+    ($tt:tt) => {
+        "// {}"
+    };
+}
+
+macro_rules! side_effect_read {
+    ($( $x:expr ),*) => {
+        unsafe {
+            asm!(
+                $(asm_comment!($x),)*
+                $(in(reg) $x,)*
+            );
+        }
+    };
+}
+
+macro_rules! side_effect_rw {
+    ($( $x:expr ),*) => {
+        unsafe {
+            asm!(
+                $(asm_comment!($x),)*
+                $(inout(reg) $x,)*
+            );
+        }
+    };
+}
+
+#[inline(never)]
+pub fn cpp_bench<const N: usize>(array: &[u32; N]) -> u64 {
+    /*
+    uint32_t data[4096];
+    uint32_t top = 0, bottom = 0;
+    for (size_t i = 0; i < len; i += 2) {
+        uint32_t elem;
+
+        elem = data[i];
+        top    += elem >> 16;
+        bottom += elem & 0xFFFF;
+
+        elem = data[i + 1];
+        top    += elem >> 16;
+        bottom += elem & 0xFFFF;
+    }
+    */
+
+    let mut i: u32 = 0;
+    let mut top: u32 = 0;
+    let mut bottom: u32 = 0;
+
+    while i < N as u32 {
+        let elem = array[i as usize];
+        top += elem >> 16;
+        bottom += elem & 0xFFFF;
+
+        let elem = array[(i + 1) as usize];
+        top += elem >> 16;
+        bottom += elem & 0xFFFF;
+
+        i += 2;
+
+        unsafe { asm!("") }
+    }
+
+    top as u64 + bottom as u64
+}
+
 #[inline(never)]
 pub fn bench_noops<const N: usize>(_array: &[u8; N]) -> u64 {
     let x = black_box(3);
@@ -25,17 +92,10 @@ pub fn bench_noops<const N: usize>(_array: &[u8; N]) -> u64 {
 
 #[inline(never)]
 pub fn bench_alu_ops<const N: usize>(_array: &[u8; N]) -> u64 {
-    let x = black_box(3);
-
-    let mut sum = black_box(0);
+    let mut sum = (0);
     for _ in 0..N {
-        unsafe {
-            asm!(
-                "add {sum}, {x}",
-                sum = inout(reg) sum,
-                x = in(reg) x as u64,
-            );
-        }
+        sum += 3;
+        side_effect_read!(sum);
     }
 
     sum
@@ -44,22 +104,18 @@ pub fn bench_alu_ops<const N: usize>(_array: &[u8; N]) -> u64 {
 #[inline(never)]
 pub fn bench_alu_ops_unrolled<const N: usize>(_array: &[u8; N]) -> u64 {
     let x = black_box(3);
-    let y = black_box(3);
 
-    let mut sum_1 = black_box(0);
-    let mut sum_2 = black_box(0);
-    let mut sum_3 = black_box(0);
-    let mut sum_4 = black_box(0);
+    let mut sum_1 = 0;
+    let mut sum_2 = 0;
+    let mut sum_3 = 0;
+    let mut sum_4 = 0;
 
     for _ in 0..N {
         sum_1 += x;
-        sum_1 &= y;
         sum_2 += x;
-        sum_2 &= y;
         sum_3 += x;
-        sum_3 &= y;
         sum_4 += x;
-        sum_4 &= y;
+        side_effect_rw!(sum_1, sum_2, sum_3, sum_4);
     }
 
     sum_1 + sum_2 + sum_3 + sum_4
