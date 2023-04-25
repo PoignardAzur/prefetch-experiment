@@ -55,7 +55,7 @@ pub fn bench_noops<T, const N: usize>(_array: &[T; N]) -> u64 {
 }
 
 #[inline(never)]
-pub fn bench_alu_ops<const N: usize>(_array: &[u8; N]) -> u64 {
+pub fn bench_alu_ops<T, const N: usize>(_array: &[T; N]) -> u64 {
     let mut sum = 0;
 
     // This loop's throughput should peak at 3 instr/cycle.
@@ -71,7 +71,7 @@ pub fn bench_alu_ops<const N: usize>(_array: &[u8; N]) -> u64 {
 }
 
 #[inline(never)]
-pub fn bench_alu_ops_unrolled<const N: usize>(_array: &[u8; N]) -> u64 {
+pub fn bench_alu_ops_unrolled<T, const N: usize>(_array: &[T; N]) -> u64 {
     let x = black_box(3);
 
     let mut sum_1 = 0;
@@ -101,7 +101,7 @@ pub fn bench_alu_ops_unrolled<const N: usize>(_array: &[u8; N]) -> u64 {
 }
 
 #[inline(never)]
-pub fn bench_alu_ops_super_unrolled<const N: usize>(_array: &[u8; N]) -> u64 {
+pub fn bench_alu_ops_super_unrolled<T, const N: usize>(_array: &[T; N]) -> u64 {
     let x = black_box(3);
 
     let mut sum_1 = 0;
@@ -143,7 +143,7 @@ pub fn bench_alu_ops_super_unrolled<const N: usize>(_array: &[u8; N]) -> u64 {
 }
 
 #[inline(never)]
-pub fn bench_mul_ops<const N: usize>(_array: &[u8; N]) -> u64 {
+pub fn bench_mul_ops<T, const N: usize>(_array: &[T; N]) -> u64 {
     let x = black_box(3);
 
     // This loop's throughput will peak at one iteration per mul latency.
@@ -159,25 +159,29 @@ pub fn bench_mul_ops<const N: usize>(_array: &[u8; N]) -> u64 {
 }
 
 #[inline(never)]
-pub fn bench_sum_of_array<const N: usize>(array: &[u8; N]) -> u8 {
+pub fn bench_sum_of_array(array: &[u8]) -> u8 {
     let x = black_box(3);
     let mut sum = 0;
 
-    for i in 0..N {
-        sum += array[i] & x;
+    // Like bench_alu_ops, this loop should peak at 1 iteration per cycle.
+    // Given the loop has a 5-instuction body, this translates to 5 instr/cycle.
+    // On Zen, it instead peaks at 0.6 iteration per cycle, eg 3 instr/cycle.
+    for i in 0..array.len() {
+        sum += array[i];
+        side_effect_read!(sum as u64);
     }
 
     sum
 }
 
 #[inline(never)]
-pub fn bench_sum_of_array_unrolled<const N: usize>(array: &[u8; N]) -> u8 {
+pub fn bench_sum_of_array_unrolled(array: &[u8]) -> u8 {
     let x = black_box(3);
     let mut sum_1 = 0;
     let mut sum_2 = 0;
 
     let mut i = 0;
-    while i < N {
+    while i < array.len() {
         sum_1 += array[i] & x;
         sum_2 += array[i + 1] & x;
         i += 2;
@@ -293,19 +297,18 @@ pub fn bench_sum_array_indirect<const N: usize, const M: usize>(
 // ----------------
 
 pub fn main() -> std::io::Result<()> {
-    let selected = black_box(4);
-
     const ITER_COUNT: usize = 10_000;
-    let small_array = black_box([0; 1000]);
+
+    let small_array_empty = [(); 1000];
 
     run_benchmarks(
         "bench_noops",
         || {
             for _ in 0..ITER_COUNT {
-                black_box(bench_noops(&small_array));
+                black_box(bench_noops(&small_array_empty));
             }
         },
-        small_array.len() * ITER_COUNT,
+        small_array_empty.len() * ITER_COUNT,
         None,
     )?;
 
@@ -313,10 +316,10 @@ pub fn main() -> std::io::Result<()> {
         "bench_alu_ops",
         || {
             for _ in 0..ITER_COUNT {
-                black_box(bench_alu_ops(&small_array));
+                black_box(bench_alu_ops(&small_array_empty));
             }
         },
-        small_array.len() * ITER_COUNT,
+        small_array_empty.len() * ITER_COUNT,
         None,
     )?;
 
@@ -324,10 +327,10 @@ pub fn main() -> std::io::Result<()> {
         "bench_alu_ops_unrolled",
         || {
             for _ in 0..ITER_COUNT {
-                black_box(bench_alu_ops_unrolled(&small_array));
+                black_box(bench_alu_ops_unrolled(&small_array_empty));
             }
         },
-        small_array.len() * ITER_COUNT,
+        small_array_empty.len() * ITER_COUNT,
         None,
     )?;
 
@@ -335,10 +338,10 @@ pub fn main() -> std::io::Result<()> {
         "bench_alu_ops_super_unrolled",
         || {
             for _ in 0..ITER_COUNT {
-                black_box(bench_alu_ops_super_unrolled(&small_array));
+                black_box(bench_alu_ops_super_unrolled(&small_array_empty));
             }
         },
-        small_array.len() * ITER_COUNT,
+        small_array_empty.len() * ITER_COUNT,
         None,
     )?;
 
@@ -346,12 +349,14 @@ pub fn main() -> std::io::Result<()> {
         "bench_mul_ops",
         || {
             for _ in 0..ITER_COUNT {
-                black_box(bench_mul_ops(&small_array));
+                black_box(bench_mul_ops(&small_array_empty));
             }
         },
-        small_array.len() * ITER_COUNT,
+        small_array_empty.len() * ITER_COUNT,
         None,
     )?;
+
+    let small_array = black_box([0; 1000]);
 
     run_benchmarks(
         "bench_sum_of_array",
