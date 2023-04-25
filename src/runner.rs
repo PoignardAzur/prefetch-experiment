@@ -192,7 +192,7 @@ pub fn run_benchmarks(
 
     let task_clock_nsec = counts[&task_clock] as f64;
     let task_clock_msec = counts[&task_clock] as f64 / 1_000_000.0;
-    let task_clock_s = counts[&task_clock] as f64 / 1_000_000.0;
+    let task_clock_s = counts[&task_clock] as f64 / 1_000_000_000.0;
 
     println!(
         "{count:>16.2} {unit:<4} {name:<30} # {info:.3} {info_unit}",
@@ -300,8 +300,16 @@ pub fn run_benchmarks(
     println!("");
 
     println!(
+        "Iterations: {count}",
+        count = iterations.separate_with_underscores()
+    );
+    println!(
         "Cycles per iteration: {count:.3}",
         count = counts[&cycles] as f64 / iterations as f64
+    );
+    println!(
+        "Instructions per iteration: {count:.3}",
+        count = counts[&instructions] as f64 / iterations as f64
     );
     if let Some(data_loads) = data_loads {
         println!(
