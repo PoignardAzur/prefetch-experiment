@@ -10,6 +10,43 @@ use rand::Rng;
 use runner::run_benchmarks;
 
 #[inline(never)]
+pub fn bench_noops<const N: usize>(_array: &[u8; N]) -> u64 {
+    let x = black_box(3);
+
+    let mut sum = black_box(0);
+    for _ in 0..N {
+        unsafe {
+            #[rustfmt::skip]
+            asm!(
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
+            );
+        }
+    }
+
+    sum
+}
+
+#[inline(never)]
 pub fn bench_alu_ops<const N: usize>(_array: &[u8; N]) -> u64 {
     let x = black_box(3);
 
@@ -242,6 +279,19 @@ pub fn main() -> std::io::Result<()> {
 
     const ITER_COUNT: usize = 10_000;
     let small_array = black_box([0; 1000]);
+
+    if true {
+        run_benchmarks(
+            "bench_noops",
+            || {
+                for _ in 0..ITER_COUNT {
+                    black_box(bench_noops(&small_array));
+                }
+            },
+            small_array.len() * ITER_COUNT,
+            None,
+        )?;
+    }
 
     if false {
         run_benchmarks(
