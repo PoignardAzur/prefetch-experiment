@@ -280,209 +280,179 @@ pub fn main() -> std::io::Result<()> {
     const ITER_COUNT: usize = 10_000;
     let small_array = black_box([0; 1000]);
 
-    if true {
-        run_benchmarks(
-            "bench_noops",
-            || {
-                for _ in 0..ITER_COUNT {
-                    black_box(bench_noops(&small_array));
-                }
-            },
-            small_array.len() * ITER_COUNT,
-            None,
-        )?;
-    }
+    run_benchmarks(
+        "bench_noops",
+        || {
+            for _ in 0..ITER_COUNT {
+                black_box(bench_noops(&small_array));
+            }
+        },
+        small_array.len() * ITER_COUNT,
+        None,
+    )?;
 
-    if false {
-        run_benchmarks(
-            "bench_alu_ops",
-            || {
-                for _ in 0..ITER_COUNT {
-                    black_box(bench_alu_ops(&small_array));
-                }
-            },
-            small_array.len() * ITER_COUNT,
-            None,
-        )?;
-    }
+    run_benchmarks(
+        "bench_alu_ops",
+        || {
+            for _ in 0..ITER_COUNT {
+                black_box(bench_alu_ops(&small_array));
+            }
+        },
+        small_array.len() * ITER_COUNT,
+        None,
+    )?;
 
-    if false {
-        run_benchmarks(
-            "bench_alu_ops_unrolled",
-            || {
-                for _ in 0..ITER_COUNT {
-                    black_box(bench_alu_ops_unrolled(&small_array));
-                }
-            },
-            small_array.len() * ITER_COUNT,
-            None,
-        )?;
-    }
+    run_benchmarks(
+        "bench_alu_ops_unrolled",
+        || {
+            for _ in 0..ITER_COUNT {
+                black_box(bench_alu_ops_unrolled(&small_array));
+            }
+        },
+        small_array.len() * ITER_COUNT,
+        None,
+    )?;
 
-    if false {
-        run_benchmarks(
-            "bench_alu_ops_super_unrolled",
-            || {
-                for _ in 0..ITER_COUNT {
-                    black_box(bench_alu_ops_super_unrolled(&small_array));
-                }
-            },
-            small_array.len() * ITER_COUNT,
-            None,
-        )?;
-    }
+    run_benchmarks(
+        "bench_alu_ops_super_unrolled",
+        || {
+            for _ in 0..ITER_COUNT {
+                black_box(bench_alu_ops_super_unrolled(&small_array));
+            }
+        },
+        small_array.len() * ITER_COUNT,
+        None,
+    )?;
 
-    if false {
-        run_benchmarks(
-            "bench_mul_ops",
-            || {
-                for _ in 0..ITER_COUNT {
-                    black_box(bench_mul_ops(&small_array));
-                }
-            },
-            small_array.len() * ITER_COUNT,
-            None,
-        )?;
-    }
+    run_benchmarks(
+        "bench_mul_ops",
+        || {
+            for _ in 0..ITER_COUNT {
+                black_box(bench_mul_ops(&small_array));
+            }
+        },
+        small_array.len() * ITER_COUNT,
+        None,
+    )?;
 
-    if false {
-        run_benchmarks(
-            "bench_sum_of_array",
-            || {
-                for _ in 0..ITER_COUNT {
-                    black_box(bench_sum_of_array(&small_array));
-                }
-            },
-            small_array.len() * ITER_COUNT,
-            Some(small_array.len() * ITER_COUNT),
-        )?;
-    }
+    run_benchmarks(
+        "bench_sum_of_array",
+        || {
+            for _ in 0..ITER_COUNT {
+                black_box(bench_sum_of_array(&small_array));
+            }
+        },
+        small_array.len() * ITER_COUNT,
+        Some(small_array.len() * ITER_COUNT),
+    )?;
 
-    if false {
-        run_benchmarks(
-            "bench_sum_of_array_unrolled",
-            || {
-                for _ in 0..ITER_COUNT {
-                    black_box(bench_sum_of_array_unrolled(&small_array));
-                }
-            },
-            small_array.len() * ITER_COUNT / 2,
-            Some(small_array.len() * ITER_COUNT),
-        )?;
-    }
+    run_benchmarks(
+        "bench_sum_of_array_unrolled",
+        || {
+            for _ in 0..ITER_COUNT {
+                black_box(bench_sum_of_array_unrolled(&small_array));
+            }
+        },
+        small_array.len() * ITER_COUNT / 2,
+        Some(small_array.len() * ITER_COUNT),
+    )?;
 
     const SMALL_ITER_COUNT: usize = 1_000;
     let array_1_mb = black_box([0; 1_000_000]);
 
-    if false {
-        run_benchmarks(
-            "bench_sum_array_1MB",
-            || {
-                for _ in 0..SMALL_ITER_COUNT {
-                    black_box(bench_sum_of_array_with_stride(&array_1_mb, 1));
-                }
-            },
-            array_1_mb.len() * SMALL_ITER_COUNT,
-            Some(array_1_mb.len() * ITER_COUNT),
-        )?;
-    }
+    run_benchmarks(
+        "bench_sum_array_1MB",
+        || {
+            for _ in 0..SMALL_ITER_COUNT {
+                black_box(bench_sum_of_array_with_stride(&array_1_mb, 1));
+            }
+        },
+        array_1_mb.len() * SMALL_ITER_COUNT,
+        Some(array_1_mb.len() * ITER_COUNT),
+    )?;
 
-    if false {
-        run_benchmarks(
-            "bench_sum_array_1MB_stride_64",
-            || {
-                for _ in 0..SMALL_ITER_COUNT {
-                    black_box(bench_sum_of_array_with_stride(&array_1_mb, 64));
-                }
-            },
-            array_1_mb.len() * SMALL_ITER_COUNT / 64,
-            Some(array_1_mb.len() * ITER_COUNT / 64),
-        )?;
-    }
+    run_benchmarks(
+        "bench_sum_array_1MB_stride_64",
+        || {
+            for _ in 0..SMALL_ITER_COUNT {
+                black_box(bench_sum_of_array_with_stride(&array_1_mb, 64));
+            }
+        },
+        array_1_mb.len() * SMALL_ITER_COUNT / 64,
+        Some(array_1_mb.len() * ITER_COUNT / 64),
+    )?;
 
-    if true {
-        run_benchmarks(
-            "bench_sum_array_1MB_stride_16",
-            || {
-                for _ in 0..SMALL_ITER_COUNT {
-                    black_box(bench_sum_of_array_with_stride(&array_1_mb, 16));
-                }
-            },
-            array_1_mb.len() * SMALL_ITER_COUNT / 16,
-            Some(array_1_mb.len() * SMALL_ITER_COUNT / 16),
-        )?;
-    }
+    run_benchmarks(
+        "bench_sum_array_1MB_stride_16",
+        || {
+            for _ in 0..SMALL_ITER_COUNT {
+                black_box(bench_sum_of_array_with_stride(&array_1_mb, 16));
+            }
+        },
+        array_1_mb.len() * SMALL_ITER_COUNT / 16,
+        Some(array_1_mb.len() * SMALL_ITER_COUNT / 16),
+    )?;
 
-    if true {
-        run_benchmarks(
-            "bench_sum_array_1MB_stride_16_prefetch_4",
-            || {
-                for _ in 0..SMALL_ITER_COUNT {
-                    black_box(bench_sum_of_array_with_stride_prefetch::<1_000_000, 4>(
-                        &array_1_mb,
-                        16,
-                    ));
-                }
-            },
-            array_1_mb.len() * SMALL_ITER_COUNT / 16,
-            Some(array_1_mb.len() * SMALL_ITER_COUNT / 16),
-        )?;
-    }
+    run_benchmarks(
+        "bench_sum_array_1MB_stride_16_prefetch_4",
+        || {
+            for _ in 0..SMALL_ITER_COUNT {
+                black_box(bench_sum_of_array_with_stride_prefetch::<1_000_000, 4>(
+                    &array_1_mb,
+                    16,
+                ));
+            }
+        },
+        array_1_mb.len() * SMALL_ITER_COUNT / 16,
+        Some(array_1_mb.len() * SMALL_ITER_COUNT / 16),
+    )?;
 
-    if true {
-        run_benchmarks(
-            "bench_sum_array_1MB_stride_16_prefetch_1",
-            || {
-                for _ in 0..SMALL_ITER_COUNT {
-                    black_box(bench_sum_of_array_with_stride_prefetch::<1_000_000, 1>(
-                        &array_1_mb,
-                        16,
-                    ));
-                }
-            },
-            array_1_mb.len() * SMALL_ITER_COUNT / 16,
-            Some(array_1_mb.len() * SMALL_ITER_COUNT / 16),
-        )?;
-    }
+    run_benchmarks(
+        "bench_sum_array_1MB_stride_16_prefetch_1",
+        || {
+            for _ in 0..SMALL_ITER_COUNT {
+                black_box(bench_sum_of_array_with_stride_prefetch::<1_000_000, 1>(
+                    &array_1_mb,
+                    16,
+                ));
+            }
+        },
+        array_1_mb.len() * SMALL_ITER_COUNT / 16,
+        Some(array_1_mb.len() * SMALL_ITER_COUNT / 16),
+    )?;
 
-    if true {
-        run_benchmarks(
-            "bench_sum_array_stride_16_and_pad",
-            || {
-                for _ in 0..SMALL_ITER_COUNT {
-                    black_box(bench_sum_array_stride_and_pad(&array_1_mb, 16));
-                }
-            },
-            array_1_mb.len() * SMALL_ITER_COUNT / 16,
-            Some(array_1_mb.len() * SMALL_ITER_COUNT / 16),
-        )?;
-    }
+    run_benchmarks(
+        "bench_sum_array_stride_16_and_pad",
+        || {
+            for _ in 0..SMALL_ITER_COUNT {
+                black_box(bench_sum_array_stride_and_pad(&array_1_mb, 16));
+            }
+        },
+        array_1_mb.len() * SMALL_ITER_COUNT / 16,
+        Some(array_1_mb.len() * SMALL_ITER_COUNT / 16),
+    )?;
 
-    if true {
-        run_benchmarks(
-            "bench_sum_array_stride_128_and_pad",
-            || {
-                for _ in 0..SMALL_ITER_COUNT {
-                    black_box(bench_sum_array_stride_and_pad(&array_1_mb, 128));
-                }
-            },
-            array_1_mb.len() * SMALL_ITER_COUNT / 128,
-            Some(array_1_mb.len() * SMALL_ITER_COUNT / 128),
-        )?;
-    }
+    run_benchmarks(
+        "bench_sum_array_stride_128_and_pad",
+        || {
+            for _ in 0..SMALL_ITER_COUNT {
+                black_box(bench_sum_array_stride_and_pad(&array_1_mb, 128));
+            }
+        },
+        array_1_mb.len() * SMALL_ITER_COUNT / 128,
+        Some(array_1_mb.len() * SMALL_ITER_COUNT / 128),
+    )?;
 
-    if true {
-        run_benchmarks(
-            "bench_sum_array_changing_stride",
-            || {
-                for _ in 0..SMALL_ITER_COUNT {
-                    black_box(bench_sum_array_changing_stride(&array_1_mb));
-                }
-            },
-            array_1_mb.len() * SMALL_ITER_COUNT / 128,
-            Some(array_1_mb.len() * SMALL_ITER_COUNT / 128),
-        )?;
-    }
+    run_benchmarks(
+        "bench_sum_array_changing_stride",
+        || {
+            for _ in 0..SMALL_ITER_COUNT {
+                black_box(bench_sum_array_changing_stride(&array_1_mb));
+            }
+        },
+        array_1_mb.len() * SMALL_ITER_COUNT / 128,
+        Some(array_1_mb.len() * SMALL_ITER_COUNT / 128),
+    )?;
 
     // generate random indices
     let array_indices: [usize; 100_000] = (0..100_000)
@@ -491,18 +461,16 @@ pub fn main() -> std::io::Result<()> {
         .try_into()
         .unwrap();
 
-    if true {
-        run_benchmarks(
-            "bench_sum_array_indirect",
-            || {
-                for _ in 0..SMALL_ITER_COUNT {
-                    black_box(bench_sum_array_indirect(&array_1_mb, &array_indices));
-                }
-            },
-            array_indices.len() * SMALL_ITER_COUNT / 64,
-            Some(array_indices.len() * SMALL_ITER_COUNT / 64),
-        )?;
-    }
+    run_benchmarks(
+        "bench_sum_array_indirect",
+        || {
+            for _ in 0..SMALL_ITER_COUNT {
+                black_box(bench_sum_array_indirect(&array_1_mb, &array_indices));
+            }
+        },
+        array_indices.len() * SMALL_ITER_COUNT / 64,
+        Some(array_indices.len() * SMALL_ITER_COUNT / 64),
+    )?;
 
     Ok(())
 }

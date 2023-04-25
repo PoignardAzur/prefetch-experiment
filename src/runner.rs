@@ -68,6 +68,17 @@ pub fn run_benchmarks(
     iterations: usize,
     data_loads: Option<usize>,
 ) -> std::io::Result<()> {
+    // if "--list" is passed, we just print the name of the benchmark
+    if std::env::args().any(|arg| arg == "--list") {
+        println!("{}", name);
+        return Ok(());
+    }
+
+    // check that the current benchmark is among those passed to argv
+    if !std::env::args().any(|arg| name.contains(&arg)) {
+        return Ok(());
+    }
+
     let skip_all_this = false;
     if skip_all_this {
         callback();
