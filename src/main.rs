@@ -38,49 +38,13 @@ macro_rules! side_effect_rw {
 }
 
 #[inline(never)]
-pub fn cpp_bench<const N: usize>(array: &[u32; N]) -> u64 {
-    /*
-    uint32_t data[4096];
-    uint32_t top = 0, bottom = 0;
-    for (size_t i = 0; i < len; i += 2) {
-        uint32_t elem;
-
-        elem = data[i];
-        top    += elem >> 16;
-        bottom += elem & 0xFFFF;
-
-        elem = data[i + 1];
-        top    += elem >> 16;
-        bottom += elem & 0xFFFF;
-    }
-    */
-
-    let mut i: u32 = 0;
-    let mut top: u32 = 0;
-    let mut bottom: u32 = 0;
-
-    while i < N as u32 {
-        let elem = array[i as usize];
-        top += elem >> 16;
-        bottom += elem & 0xFFFF;
-
-        let elem = array[(i + 1) as usize];
-        top += elem >> 16;
-        bottom += elem & 0xFFFF;
-
-        i += 2;
-
-        unsafe { asm!("") }
-    }
-
-    top as u64 + bottom as u64
-}
-
-#[inline(never)]
-pub fn bench_noops<const N: usize>(_array: &[u8; N]) -> u64 {
+pub fn bench_noops<T, const N: usize>(_array: &[T; N]) -> u64 {
     let x = black_box(3);
-
     let mut sum = black_box(0);
+
+    // This loop's instr/cycle throughput should peak at whatever
+    // the CPU's pipeline width is. For Intel CPUs this is usually 4.
+    // It might be a little higher because of µops fusion.
     for _ in 0..N {
         unsafe {
             asm!("nop", "nop", "nop", "nop", "nop", "nop");
@@ -92,7 +56,12 @@ pub fn bench_noops<const N: usize>(_array: &[u8; N]) -> u64 {
 
 #[inline(never)]
 pub fn bench_alu_ops<const N: usize>(_array: &[u8; N]) -> u64 {
-    let mut sum = (0);
+    let mut sum = 0;
+
+    // This loop's throughput should peak at 3 instr/cycle.
+    // This is because the loop to a 3-instructions body, and can only
+    // run one iteration per cycle, because of the dependency chain
+    // between the `sum +=` instructions.
     for _ in 0..N {
         sum += 3;
         side_effect_read!(sum);
@@ -110,6 +79,16 @@ pub fn bench_alu_ops_unrolled<const N: usize>(_array: &[u8; N]) -> u64 {
     let mut sum_3 = 0;
     let mut sum_4 = 0;
 
+    // For some reason, the throughput of this loop peaks on a Zen CPU at
+    // 3.3 instr/cycle, against an expected 4 instr/cycle.
+    // By contrast, an Intel i7-5600u (Broadwell archictecture) peaks at 4.0,
+    // as expected.
+    // As far as I could figure out, the bottleneck is somewhere in register
+    // renaming: bench_alu_ops_super_unrolled, which uses more virtual GPUs,
+    // peaks at 3.9 instr/cycle on Zen; and this loop's throughput can also be
+    // increased to 3.9 instr/cycle by setting every variable to zero every
+    // loop iteration, which breaks the dependency chain and "resets" register
+    // renaming.
     for _ in 0..N {
         sum_1 += x;
         sum_2 += x;
@@ -134,6 +113,8 @@ pub fn bench_alu_ops_super_unrolled<const N: usize>(_array: &[u8; N]) -> u64 {
     let mut sum_7 = 0;
     let mut sum_8 = 0;
 
+    // This loop's throughput should peak at the CPU's number of ALU slots.
+    // Most CPUs have 4 ALU slots and will thus peak at 4 instr/cycle.
     for _ in 0..N {
         unsafe {
             asm!(
@@ -165,6 +146,10 @@ pub fn bench_alu_ops_super_unrolled<const N: usize>(_array: &[u8; N]) -> u64 {
 pub fn bench_mul_ops<const N: usize>(_array: &[u8; N]) -> u64 {
     let x = black_box(3);
 
+    // This loop's throughput will peak at one iteration per mul latency.
+    // Most CPUs have a mul latency of 3, so the loop body will run 0.33 times
+    // per cycle.
+    // With the loop counter, this translates to roughly 0.4 instr/cycle.
     let mut product = black_box(0);
     for _ in 0..N {
         product *= x;
