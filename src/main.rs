@@ -16,30 +16,7 @@ pub fn bench_noops<const N: usize>(_array: &[u8; N]) -> u64 {
     let mut sum = black_box(0);
     for _ in 0..N {
         unsafe {
-            #[rustfmt::skip]
-            asm!(
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-                "nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-            );
+            asm!("nop", "nop", "nop", "nop", "nop", "nop");
         }
     }
 
